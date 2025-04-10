@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "./LoanCalculator.css"; // Import the CSS file
 
 const LoanCalculator = () => {
   const [loanAmount, setLoanAmount] = useState(10000);
@@ -96,64 +97,49 @@ const LoanCalculator = () => {
   };
 
   return (
-    <div className="calculator-container">
-      <h1>Loan Interest Calculator</h1>
-
-      <div className="input-grid">
-        <div>
-          <div className="input-group">
-            <label>Loan Amount ($)</label>
-            <input
-              type="number"
-              min="1"
-              value={loanAmount}
-              onChange={(e) =>
-                setLoanAmount(Math.max(0, Number(e.target.value)))
-              }
-            />
-          </div>
-
-          <div className="input-group">
-            <label>Annual Interest Rate (%)</label>
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={interestRate}
-              onChange={(e) =>
-                setInterestRate(Math.max(0.0, Number(e.target.value)))
-              }
-            />
-          </div>
-        </div>
-
-        <div>
-          <div className="input-group">
-            <label>Loan Term (years)</label>
-            <input
-              type="number"
-              min="0.5"
-              step="0.5"
-              value={loanTerm}
-              onChange={(e) =>
-                setLoanTerm(Math.max(0.0, Number(e.target.value)))
-              }
-            />
-          </div>
-
-          <div className="input-group">
-            <label>Payments per Year</label>
-            <input
-              type="number"
-              min="1"
-              step="1"
-              value={paymentFrequency}
-              onChange={(e) => setPaymentFrequency(e.target.value)}
-            />
-          </div>
-        </div>
+    <div className="loan-calculator">
+      <h2>Loan Calculator</h2>
+      <div className="input-group">
+        <label>
+          Loan Amount:
+          <input
+            type="number"
+            value={loanAmount}
+            onChange={(e) => setLoanAmount(e.target.value)}
+            className="input-field"
+          />
+        </label>
       </div>
-
+      <div className="input-group">
+        <label>
+          Interest Rate (%):
+          <input
+            type="number"
+            value={interestRate}
+            onChange={(e) => setInterestRate(e.target.value)}
+            className="input-field"
+          />
+        </label>
+      </div>
+      <div className="input-group">
+        <label>
+          Loan Term (years):
+          <input
+            type="number"
+            value={loanTerm}
+            onChange={(e) => setLoanTerm(e.target.value)}
+            className="input-field"
+          />
+        </label>
+      </div>
+      <button onClick={calculateLoan} className="calculate-button">
+        Calculate
+      </button>
+      {monthlyPayment && (
+        <div className="result">
+          <p>Your Monthly Payment is: ${monthlyPayment}</p>
+        </div>
+      )}
       <div className="summary-container">
         <h2>Loan Summary</h2>
         <div className="summary-grid">
