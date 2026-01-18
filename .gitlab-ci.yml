@@ -1,53 +1,23 @@
-image: node:18
-
 stages:
-  - regen
-  - build
-  - deploy
+  - regen-lock
 
-cache:
-  paths:
-    - node_modules/
-
-before_script:
-  - node -v
-  - npm -v
-
-regen-lock:
-  stage: regen
+regen-lock-pr:
+  stage: regen-lock
   image: node:18
   script:
-    - git config --global user.email "ci-bot@example.com"
-    - git config --global user.name "CI Bot"
-    - rm -f package-lock.json
     - npm install --package-lock-only
+    - short_sha=$(echo $CI_COMMIT_SHA | cut -c1-7)
+    - timestamp=$(date +%Y-%m-%d-%H-%M-%S)
+    - branch_name="regen-lock-$short_sha-$timestamp"
+    - git checkout -b $branch_name
     - git add package-lock.json
+    - git commit -m "chore: regenerate package-lock.json"
+    - git push origin $branch_name
     - |
-      if ! git diff --staged --quiet; then
-        git commit -m "Regenerate package-lock.json (CI)"
-        # push using token stored in CI variable GITHUB_TOKEN (personal access token with repo scope)
-        git push https://$GITHUB_TOKEN@github.com/ambarish135/loan-calculator.git HEAD:main
-      else
-        echo "No changes to package-lock.json"
-      fi
+      curl -X POST \
+        -H 'Authorization: token $GITHUB_TOKEN' \
+        -H 'Accept: application/vnd.github.v3+json' \
+        https://api.github.com/repos/ambarish135/loan-calculator/pulls \
+        -d '{"title":"chore: regenerate package-lock.json (CI)", "body":"This PR regenerates package-lock.json as part of CI job.", "head":"'$branch_name'", "base":"main"}'
   only:
     - main
-  when: manual
-
-build:
-  stage: build
-  script:
-    - npm ci
-    # If you hit memory issues uncomment the next line:
-    # - export NODE_OPTIONS=--max-old-space-size=4096
-    - npm run build
-  artifacts:
-    paths:
-      - build
-    expire_in: 1 week
-
-deploy:
-  stage: deploy
-  script:
-    - echo "Add your deployment steps here (optional)"
-  when: manual
