@@ -1,0 +1,53 @@
+image: node:18
+
+stages:
+  - regen
+  - build
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+before_script:
+  - node -v
+  - npm -v
+
+regen-lock:
+  stage: regen
+  image: node:18
+  script:
+    - git config --global user.email "ci-bot@example.com"
+    - git config --global user.name "CI Bot"
+    - rm -f package-lock.json
+    - npm install --package-lock-only
+    - git add package-lock.json
+    - |
+      if ! git diff --staged --quiet; then
+        git commit -m "Regenerate package-lock.json (CI)"
+        # push using token stored in CI variable GITHUB_TOKEN (personal access token with repo scope)
+        git push https://$GITHUB_TOKEN@github.com/ambarish135/loan-calculator.git HEAD:main
+      else
+        echo "No changes to package-lock.json"
+      fi
+  only:
+    - main
+  when: manual
+
+build:
+  stage: build
+  script:
+    - npm ci
+    # If you hit memory issues uncomment the next line:
+    # - export NODE_OPTIONS=--max-old-space-size=4096
+    - npm run build
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 week
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Add your deployment steps here (optional)"
+  when: manual
